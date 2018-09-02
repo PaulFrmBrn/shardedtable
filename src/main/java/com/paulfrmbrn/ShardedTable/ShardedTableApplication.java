@@ -15,8 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.util.stream.BaseStream;
 import java.util.stream.Stream;
 
@@ -58,8 +56,9 @@ public class ShardedTableApplication implements CommandLineRunner {
 
         logger.info("Payments found with findAll():");
         logger.info("-------------------------------");
-        repository.findAll().forEach(it -> logger.info(it.toString()));
+        repository.findAll().subscribe(it -> logger.info(it.toString()));
         logger.info("-------------------------------");
+
 
     }
 
@@ -79,16 +78,9 @@ public class ShardedTableApplication implements CommandLineRunner {
             throw new IllegalArgumentException(String.format("Error occurred while parsing line: %s", string), e);
         }
 
-        BigDecimal sum;
-        try {
-            DecimalFormat decimalFormat = new DecimalFormat();
-            decimalFormat.setParseBigDecimal(true);
-            sum = (BigDecimal) decimalFormat.parse(tokens[2]);
-        } catch (ParseException e) {
-            throw new IllegalArgumentException(String.format("Error occurred while parsing line: %s", string), e);
-        }
+        BigDecimal amount = BigDecimalFormat.format(tokens[2]);
 
-        return new Payment(payerId, storeId, sum);
+        return new Payment(payerId, storeId, amount);
 
     }
 
