@@ -1,0 +1,12 @@
+package com.paulfrmbrn.ShardedTable;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class ShardedTableApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(ShardedTableApplication.class, args);
+    }
+}
