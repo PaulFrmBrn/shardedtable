@@ -1,5 +1,7 @@
 package com.paulfrmbrn.ShardedTable;
 
+import org.springframework.data.annotation.Id;
+
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
 
@@ -7,21 +9,29 @@ import static java.util.Objects.requireNonNull;
 
 // todo javaodc
 // todo test
+// todo final
 public class Payment {
 
-    private final String id;
+    @Id
+    private String id;
 
-    private final long payerId;
+    private long payerId;
 
-    private final long storeId;
+    private long storeId;
 
     private BigDecimal sum;
 
-    public Payment(@Nonnull String id, long payerId, long storeId, @Nonnull BigDecimal sum) {
-        this.id = requireNonNull(id, "id");
+    public Payment() {
+    }
+
+    public Payment(long payerId, long storeId, @Nonnull BigDecimal sum) {
         this.payerId = payerId;
         this.storeId = storeId;
         this.sum = requireNonNull(sum, "sum");
+    }
+
+    public String getId() {
+        return id;
     }
 
     public long getPayerId() {
@@ -36,12 +46,19 @@ public class Payment {
         return sum;
     }
 
+    public void setSum(BigDecimal sum) {
+        this.sum = sum;
+    }
+
     @Override
     public String toString() {
         return "Payment{" +
-                "payerId=" + payerId +
+                "id='" + id + '\'' +
+                ", payerId=" + payerId +
                 ", storeId=" + storeId +
                 ", sum=" + sum +
                 '}';
     }
+
+
 }
