@@ -1,8 +1,6 @@
 package com.paulfrmbrn.sharded.table;
 
-import com.paulfrmbrn.sharded.table.primary.PrimaryModel;
 import com.paulfrmbrn.sharded.table.primary.PrimaryRepository;
-import com.paulfrmbrn.sharded.table.secondary.SecondaryModel;
 import com.paulfrmbrn.sharded.table.secondary.SecondaryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,16 +79,16 @@ public class ShardedTableApplication implements CommandLineRunner {
 
         //this.secondaryRepository.save(new SecondaryModel(null, "Secondary database plain objec1t"));
 
-        this.primaryRepository.save(new PrimaryModel(null, "Just 1st"));
+        this.primaryRepository.save(new JustModel(null, "Just 1st"));
 
-        this.secondaryRepository.save(new SecondaryModel(null, "Just 2nd"));
+        this.secondaryRepository.save(new JustModel(null, "Just 2nd"));
 
-        List<PrimaryModel> primaries = this.primaryRepository.findAll();
+        List<JustModel> primaries = this.primaryRepository.findAll();
         for (JustModel primary : primaries) {
             logger.info(primary.toString());
         }
 
-        List<SecondaryModel> secondaries = this.secondaryRepository.findAll();
+        List<JustModel> secondaries = this.secondaryRepository.findAll();
         for (JustModel secondary : secondaries) {
             logger.info(secondary.toString());
         }
