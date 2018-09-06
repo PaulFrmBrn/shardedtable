@@ -1,4 +1,4 @@
-package com.paulfrmbrn.ShardedTable;
+package com.paulfrmbrn.sharded.table;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;

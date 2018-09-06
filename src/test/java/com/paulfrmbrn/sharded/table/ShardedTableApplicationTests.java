@@ -1,4 +1,4 @@
-package com.paulfrmbrn.ShardedTable;
+package com.paulfrmbrn.sharded.table;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

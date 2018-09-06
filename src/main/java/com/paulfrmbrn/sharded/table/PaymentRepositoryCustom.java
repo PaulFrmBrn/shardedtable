@@ -1,4 +1,4 @@
-package com.paulfrmbrn.ShardedTable;
+package com.paulfrmbrn.sharded.table;
 
 import reactor.core.publisher.Mono;
 

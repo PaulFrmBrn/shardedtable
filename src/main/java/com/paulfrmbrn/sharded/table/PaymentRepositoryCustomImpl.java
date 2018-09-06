@@ -1,4 +1,4 @@
-package com.paulfrmbrn.ShardedTable;
+package com.paulfrmbrn.sharded.table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +38,9 @@ public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
         GroupOperation group = group("payerId")
                 .last("payerId").as("payerId")
                 .addToSet("storeId").as("storeIds")
-                .sum("sum").as("total");
-        ProjectionOperation projection = project("total", "storeIds").and("payerId").previousOperation();
+                .sum("sum").as("total")
+                .last("sum").as("lastSum");
+        ProjectionOperation projection = project("total", "lastSum", "storeIds").and("payerId").previousOperation();
 
         Aggregation aggregation = newAggregation(
                 match(criteria),
@@ -75,6 +76,8 @@ public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
 
         private List<Long> storeIds;
 
+        private BigDecimal lastSum;
+
         public PaymentSummary() {
         }
 
@@ -83,6 +86,7 @@ public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
         }
 
         public void setTotal(BigDecimal total) {
+            logger.debug("set total = {}", total);
             this.total = total;
         }
 
@@ -99,7 +103,16 @@ public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
         }
 
         public void setStoreIds(List<Long> storeIds) {
+            logger.debug("set storeIds = {}", storeIds);
             this.storeIds = storeIds;
+        }
+
+        public BigDecimal getLastSum() {
+            return lastSum;
+        }
+
+        public void setLastSum(BigDecimal lastSum) {
+            this.lastSum = lastSum;
         }
 
         @Override
@@ -108,6 +121,7 @@ public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
                     "total=" + total +
                     ", payerId=" + payerId +
                     ", storeIds=" + storeIds +
+                    ", lastSum=" + lastSum +
                     '}';
         }
     }
