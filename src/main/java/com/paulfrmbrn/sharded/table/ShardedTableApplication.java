@@ -1,6 +1,5 @@
 package com.paulfrmbrn.sharded.table;
 
-import com.paulfrmbrn.sharded.table.common.JustModel;
 import com.paulfrmbrn.sharded.table.primary.PrimaryModel;
 import com.paulfrmbrn.sharded.table.primary.PrimaryRepository;
 import com.paulfrmbrn.sharded.table.secondary.SecondaryModel;

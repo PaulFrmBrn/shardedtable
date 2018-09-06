@@ -1,4 +1,4 @@
-package com.paulfrmbrn.sharded.table.common;
+package com.paulfrmbrn.sharded.table;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;

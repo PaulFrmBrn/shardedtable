@@ -1,6 +1,6 @@
 package com.paulfrmbrn.sharded.table.primary;
 
-import com.paulfrmbrn.sharded.table.common.JustModel;
+import com.paulfrmbrn.sharded.table.JustModel;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "first_mongo")
