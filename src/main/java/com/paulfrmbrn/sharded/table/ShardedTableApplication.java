@@ -1,5 +1,6 @@
 package com.paulfrmbrn.sharded.table;
 
+import com.paulfrmbrn.sharded.table.dao.ShardedRepository;
 import com.paulfrmbrn.sharded.table.dao.primary.PrimaryRepository;
 import com.paulfrmbrn.sharded.table.dao.secondary.SecondaryRepository;
 import org.slf4j.Logger;
@@ -39,6 +40,9 @@ public class ShardedTableApplication implements CommandLineRunner {
     @Autowired
     private SecondaryRepository secondaryRepository;
 
+    @Autowired
+    ShardedRepository shardedRepository;
+
 
     // todo extract classes
 
@@ -60,13 +64,11 @@ public class ShardedTableApplication implements CommandLineRunner {
         getFlux(lines)
                 .map(ShardedTableApplication::getPayment)
                 .subscribe(payment -> {
-                    primaryRepository.save(payment);
-                    secondaryRepository.save(payment);
+                    shardedRepository.save(payment);
                 });
 
-        this.primaryRepository.save(new Payment(1, 1, BigDecimal.TEN));
-
-        this.secondaryRepository.save(new Payment(2, 2, BigDecimal.ONE));
+        this.shardedRepository.save(new Payment(1, 1, BigDecimal.TEN));
+        this.shardedRepository.save(new Payment(2, 2, BigDecimal.ONE));
 
         logger.info("Payments found with findAll():");
         logger.info("-------------------------------");
