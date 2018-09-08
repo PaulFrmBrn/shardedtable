@@ -7,6 +7,7 @@
 *.iws
 *.iml
 *.ipr
+application*.gz
 /out/
 
 application.log

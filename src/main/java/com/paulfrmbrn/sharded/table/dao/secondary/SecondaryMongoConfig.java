@@ -13,13 +13,13 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
         mongoTemplateRef = "secondaryMongoTemplate")
 public class SecondaryMongoConfig {
 
-    @Value("${mongodb.secondary.host}")
+    @Value("${shard.secondary.host}")
     private String host;
 
-    @Value("${mongodb.secondary.port}")
+    @Value("${shard.secondary.port}")
     private int port;
 
-    @Value("${mongodb.secondary.database}")
+    @Value("${shard.secondary.database}")
     private String database;
 
     @Bean(name = "secondaryMongoTemplate")

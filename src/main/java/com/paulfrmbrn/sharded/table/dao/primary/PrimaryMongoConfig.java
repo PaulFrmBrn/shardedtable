@@ -14,13 +14,13 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
         mongoTemplateRef = "primaryMongoTemplate")
 public class PrimaryMongoConfig {
 
-    @Value("${mongodb.primary.host}")
+    @Value("${shard.primary.host}")
     private String host;
 
-    @Value("${mongodb.primary.port}")
+    @Value("${shard.primary.port}")
     private int port;
 
-    @Value("${mongodb.primary.database}")
+    @Value("${shard.primary.database}")
     private String database;
 
     @Primary

@@ -19,9 +19,9 @@ import java.util.Optional;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
-public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
+public class PaymentRepositoryImpl implements PaymentRepository {
 
-    private static final Logger logger = LoggerFactory.getLogger(PaymentRepositoryCustomImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(PaymentRepositoryImpl.class);
 
     @Autowired
     private MongoTemplate mongoTemplate;
