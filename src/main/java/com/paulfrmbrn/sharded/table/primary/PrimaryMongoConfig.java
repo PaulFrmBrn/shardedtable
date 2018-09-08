@@ -1,13 +1,18 @@
 package com.paulfrmbrn.sharded.table.primary;
 
 import com.mongodb.MongoClient;
+import org.bson.types.Decimal128;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.lang.NonNull;
+
+import java.math.BigDecimal;
 
 @Configuration
 @EnableMongoRepositories(
@@ -40,4 +45,46 @@ public class PrimaryMongoConfig extends AbstractMongoConfiguration {
     protected String getDatabaseName() {
         return database;
     }
+
+//    //@Bean
+//    //@Primary
+//    @Override
+//    public CustomConversions customConversions() {
+//        return new MongoCustomConversions(Arrays.asList(
+//                //new BigDecimalDecimal128Converter(),
+//                //new Decimal128BigDecimalConverter()
+//                new BigDecimalToDoubleConverter(),
+//                new DoubleToBigDecimalConverter()
+//        ));
+//    }
+//
+//    @Override
+//    public MappingMongoConverter mappingMongoConverter() throws Exception {
+//
+//        DbRefResolver dbRefResolver = new DefaultDbRefResolver(mongoDbFactory());
+//        MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, mongoMappingContext());
+//        converter.setCustomConversions(customConversions());
+//
+//        return converter;
+//    }
+
+    //@WritingConverter
+    private static class BigDecimalDecimal128Converter implements Converter<BigDecimal, Decimal128> {
+
+        @Override
+        public Decimal128 convert(@NonNull BigDecimal source) {
+            return new Decimal128(source);
+        }
+    }
+
+    //@ReadingConverter
+    private static class Decimal128BigDecimalConverter implements Converter<Decimal128, BigDecimal> {
+
+        @Override
+        public BigDecimal convert(@NonNull Decimal128 source) {
+            return source.bigDecimalValue();
+        }
+
+    }
+
 }

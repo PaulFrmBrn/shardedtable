@@ -1,5 +1,6 @@
 package com.paulfrmbrn.sharded.table;
 
+import org.bson.types.Decimal128;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -11,7 +12,7 @@ import static java.util.Objects.requireNonNull;
 // todo javaodc
 // todo test
 // todo final
-@Document(collection = "payment")
+@Document(collection = "payment2")
 public class Payment {
 
     @Id
@@ -21,7 +22,7 @@ public class Payment {
 
     private long storeId;
 
-    private BigDecimal sum;
+    private Decimal128 sum;
 
     public Payment() {
     }
@@ -29,7 +30,7 @@ public class Payment {
     public Payment(long payerId, long storeId, @Nonnull BigDecimal sum) {
         this.payerId = payerId;
         this.storeId = storeId;
-        this.sum = requireNonNull(sum, "sum");
+        this.sum = new Decimal128(requireNonNull(sum, "sum"));
     }
 
     public String getId() {
@@ -44,11 +45,11 @@ public class Payment {
         return storeId;
     }
 
-    public BigDecimal getSum() {
+    public Decimal128 getSum() {
         return sum;
     }
 
-    public void setSum(BigDecimal sum) {
+    public void setSum(Decimal128 sum) {
         this.sum = sum;
     }
 
