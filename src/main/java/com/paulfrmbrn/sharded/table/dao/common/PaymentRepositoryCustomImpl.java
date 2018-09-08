@@ -1,17 +1,20 @@
-package com.paulfrmbrn.sharded.table;
+package com.paulfrmbrn.sharded.table.dao.common;
 
+import com.paulfrmbrn.sharded.table.Payment;
+import org.bson.types.Decimal128;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
-import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -20,13 +23,13 @@ public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentRepositoryCustomImpl.class);
 
-    //@Autowired
+    @Autowired
     private MongoTemplate mongoTemplate;
 
 
     // todo refactor
     @Override
-    public Mono<BigDecimal> getTotalForPayer(long payerId) {
+    public Optional<BigDecimal> getTotalForPayer(long payerId) {
 
 //        Query query = new Query();
 //        query.addCriteria(Criteria.where("payerId").is(payerId));
@@ -53,13 +56,15 @@ public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
         logger.debug("mappedResults = {}", mappedResults);
 
         if (mappedResults.size() == 0) {
-            return Mono.empty();
+            return Optional.empty();
         } else {
             PaymentSummary summary = mappedResults.get(0);
             logger.debug("summary = {}", summary);
-            BigDecimal total = summary.getTotal();
+            Decimal128 total = summary.getTotal();
             logger.debug("total = {}", total);
-            return Mono.just(total);
+            BigDecimal totalBD = total.bigDecimalValue();
+            logger.debug("total (BigDecial) = {}", totalBD);
+            return Optional.of(totalBD);
         }
 
     }
@@ -69,22 +74,22 @@ public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
     class PaymentSummary {
 
 
-        private BigDecimal total;
+        private Decimal128 total;
 
         private Long payerId;
 
         private List<Long> storeIds;
 
-        private BigDecimal lastSum;
+        private Decimal128 lastSum;
 
         public PaymentSummary() {
         }
 
-        public BigDecimal getTotal() {
+        public Decimal128 getTotal() {
             return total;
         }
 
-        public void setTotal(BigDecimal total) {
+        public void setTotal(Decimal128 total) {
             logger.debug("set total = {}", total);
             this.total = total;
         }
@@ -106,11 +111,11 @@ public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
             this.storeIds = storeIds;
         }
 
-        public BigDecimal getLastSum() {
+        public Decimal128 getLastSum() {
             return lastSum;
         }
 
-        public void setLastSum(BigDecimal lastSum) {
+        public void setLastSum(Decimal128 lastSum) {
             this.lastSum = lastSum;
         }
 

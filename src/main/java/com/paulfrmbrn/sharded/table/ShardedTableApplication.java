@@ -1,7 +1,7 @@
 package com.paulfrmbrn.sharded.table;
 
-import com.paulfrmbrn.sharded.table.primary.PrimaryRepository;
-import com.paulfrmbrn.sharded.table.secondary.SecondaryRepository;
+import com.paulfrmbrn.sharded.table.dao.primary.PrimaryRepository;
+import com.paulfrmbrn.sharded.table.dao.secondary.SecondaryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

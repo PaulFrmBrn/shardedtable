@@ -1,4 +1,4 @@
-package com.paulfrmbrn.sharded.table.primary;
+package com.paulfrmbrn.sharded.table.dao.primary;
 
 import com.mongodb.MongoClient;
 import org.bson.types.Decimal128;
@@ -7,12 +7,20 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.CustomConversions;
+import org.springframework.data.convert.ReadingConverter;
+import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.convert.DbRefResolver;
+import org.springframework.data.mongodb.core.convert.DefaultDbRefResolver;
+import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
+import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.lang.NonNull;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 
 @Configuration
 @EnableMongoRepositories(
@@ -36,39 +44,26 @@ public class PrimaryMongoConfig extends AbstractMongoConfiguration {
         return new MongoTemplate(mongoClient(), getDatabaseName());
     }
 
+
     @Override
-    public MongoClient mongoClient() {
-        return new MongoClient(host, port);
+    public CustomConversions customConversions() {
+        return new MongoCustomConversions(Arrays.asList(
+                new BigDecimalDecimal128Converter(),
+                new Decimal128BigDecimalConverter()
+        ));
     }
 
     @Override
-    protected String getDatabaseName() {
-        return database;
+    public MappingMongoConverter mappingMongoConverter() throws Exception {
+
+        DbRefResolver dbRefResolver = new DefaultDbRefResolver(mongoDbFactory());
+        MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, mongoMappingContext());
+        converter.setCustomConversions(customConversions());
+
+        return converter;
     }
 
-//    //@Bean
-//    //@Primary
-//    @Override
-//    public CustomConversions customConversions() {
-//        return new MongoCustomConversions(Arrays.asList(
-//                //new BigDecimalDecimal128Converter(),
-//                //new Decimal128BigDecimalConverter()
-//                new BigDecimalToDoubleConverter(),
-//                new DoubleToBigDecimalConverter()
-//        ));
-//    }
-//
-//    @Override
-//    public MappingMongoConverter mappingMongoConverter() throws Exception {
-//
-//        DbRefResolver dbRefResolver = new DefaultDbRefResolver(mongoDbFactory());
-//        MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, mongoMappingContext());
-//        converter.setCustomConversions(customConversions());
-//
-//        return converter;
-//    }
-
-    //@WritingConverter
+    @WritingConverter
     private static class BigDecimalDecimal128Converter implements Converter<BigDecimal, Decimal128> {
 
         @Override
@@ -77,7 +72,7 @@ public class PrimaryMongoConfig extends AbstractMongoConfiguration {
         }
     }
 
-    //@ReadingConverter
+    @ReadingConverter
     private static class Decimal128BigDecimalConverter implements Converter<Decimal128, BigDecimal> {
 
         @Override
@@ -85,6 +80,16 @@ public class PrimaryMongoConfig extends AbstractMongoConfiguration {
             return source.bigDecimalValue();
         }
 
+    }
+
+    @Override
+    public MongoClient mongoClient() {
+        return new MongoClient(host, port);
+    }
+
+    @Override
+    protected String getDatabaseName() {
+        return database;
     }
 
 }
