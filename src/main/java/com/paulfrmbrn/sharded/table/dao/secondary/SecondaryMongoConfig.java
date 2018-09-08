@@ -11,8 +11,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @EnableMongoRepositories(
         basePackageClasses = SecondaryRepository.class,
         mongoTemplateRef = "secondaryMongoTemplate")
-public class SecondaryMongoConfig /*extends AbstractMongoConfiguration*/ {
-
+public class SecondaryMongoConfig {
 
     @Value("${mongodb.secondary.host}")
     private String host;
@@ -29,15 +28,5 @@ public class SecondaryMongoConfig /*extends AbstractMongoConfiguration*/ {
         //return new MongoTemplate(mongoClient(), getDatabaseName());
         return new MongoTemplate(new MongoClient(host, port), database);
     }
-
-//    @Override
-//    public MongoClient mongoClient() {
-//        return new MongoClient(host, port);
-//    }
-//
-//    @Override
-//    protected String getDatabaseName() {
-//        return database;
-//    }
 
 }
