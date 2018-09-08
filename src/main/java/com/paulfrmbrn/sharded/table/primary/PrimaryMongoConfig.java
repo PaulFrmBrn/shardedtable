@@ -5,14 +5,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
-@EnableMongoRepositories(basePackages = "com.paulfrmbrn.sharded.table.primary", mongoTemplateRef = "primaryMongoTemplate")
-public class PrimaryMongoConfig {
+@EnableMongoRepositories(
+        basePackageClasses = PrimaryRepository.class,
+        mongoTemplateRef = "primaryMongoTemplate")
+public class PrimaryMongoConfig extends AbstractMongoConfiguration {
 
     @Value("${mongodb.primary.host}")
     private String host;
@@ -26,15 +27,17 @@ public class PrimaryMongoConfig {
     @Primary
     @Bean(name = "primaryMongoTemplate")
     public MongoTemplate primaryMongoTemplate() throws Exception {
-        return new MongoTemplate(primaryFactory());
+        //return new MongoTemplate(MongoClients.create("mongodb://" + host + ":" + port), database);
+        return new MongoTemplate(mongoClient(), getDatabaseName());
     }
 
-    @Bean
-    @Primary
-    public MongoDbFactory primaryFactory() throws Exception {
-        return new SimpleMongoDbFactory(
-                new MongoClient(host, port), database
-        );
+    @Override
+    public MongoClient mongoClient() {
+        return new MongoClient(host, port);
     }
 
+    @Override
+    protected String getDatabaseName() {
+        return database;
+    }
 }

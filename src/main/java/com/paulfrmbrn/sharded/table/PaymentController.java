@@ -1,6 +1,5 @@
 package com.paulfrmbrn.sharded.table;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,17 +15,19 @@ import java.math.BigDecimal;
 @RestController
 public class PaymentController {
 
-    @Autowired
-    private PaymentRepository repository;
+    //@Autowired
+    //private PaymentRepository repository;
 
     @GetMapping("/payments")
     public Flux<Payment> listPayment() {
-        return repository.findAll();
+        //return repository.findAll();
+        return Flux.empty();
     }
 
     @GetMapping("/payer/total/{id}")
     public Mono<BigDecimal> getPayerTotal(@PathVariable Long id) {
-        return repository.getTotalForPayer(id);
+        return Mono.empty();
+        //return repository.getTotalForPayer(id);
     }
 
 

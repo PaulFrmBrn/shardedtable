@@ -17,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.stream.BaseStream;
 import java.util.stream.Stream;
 
@@ -30,8 +29,6 @@ public class ShardedTableApplication implements CommandLineRunner {
         SpringApplication.run(ShardedTableApplication.class, args);
     }
 
-    @Autowired
-    private PaymentRepository repository;
 
     @Value("${csv.file.path}")
     private String csvFilePath;
@@ -46,9 +43,10 @@ public class ShardedTableApplication implements CommandLineRunner {
     // todo extract classes
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
 
-        repository.deleteAll();
+        this.primaryRepository.deleteAll();
+        this.secondaryRepository.deleteAll();
 
         logger.info("csvFilePath = {}", csvFilePath);
 
@@ -59,43 +57,49 @@ public class ShardedTableApplication implements CommandLineRunner {
         } catch (InvalidPathException | IOException e) {
             throw new IllegalArgumentException(String.format("Invalid path: %s", csvFilePath), e);
         }
-//        getFlux(lines)
-//                .map(ShardedTableApplication::getPayment)
-//                .subscribe(payment -> repository.save(payment));
+        getFlux(lines)
+                .map(ShardedTableApplication::getPayment)
+                .subscribe(payment -> {
+                    primaryRepository.save(payment);
+                    secondaryRepository.save(payment);
+                });
+
+        this.primaryRepository.save(new Payment(1, 1, BigDecimal.TEN));
+
+        this.secondaryRepository.save(new Payment(2, 2, BigDecimal.ONE));
+
+        logger.info("Payments found with findAll():");
+        logger.info("-------------------------------");
+        logger.info("primary-->>>>>>>>>>>>>>");
+        //primaryRepository.findAll().subscribe(it -> logger.info(it.toString()));
+        primaryRepository.findAll().forEach(it -> logger.info(it.toString()));
+
+        logger.info("secondary-->>>>>>>>>>>>>>");
+        //secondaryRepository.findAll().subscribe(it -> logger.info(it.toString()));
+        secondaryRepository.findAll().forEach(it -> logger.info(it.toString()));
+        logger.info("-------------------------------");
+
+//        logger.info("************************************************************");
+//        logger.info("Start printing mongo objects");
+//        logger.info("************************************************************");
 //
-//        logger.info("Payments found with findAll():");
-//        logger.info("-------------------------------");
-//        repository.findAll().subscribe(it -> logger.info(it.toString()));
-//        logger.info("-------------------------------");
-
-        logger.info("************************************************************");
-        logger.info("Start printing mongo objects");
-        logger.info("************************************************************");
-
-        this.primaryRepository.deleteAll();
-        this.secondaryRepository.deleteAll();
-
-        //this.primaryRepository.save(new PrimaryModel(null, "Primary database plain object1"));
-
-        //this.secondaryRepository.save(new SecondaryModel(null, "Secondary database plain objec1t"));
-
-        this.primaryRepository.save(new JustModel(null, "Just 1st"));
-
-        this.secondaryRepository.save(new JustModel(null, "Just 2nd"));
-
-        List<JustModel> primaries = this.primaryRepository.findAll();
-        for (JustModel primary : primaries) {
-            logger.info(primary.toString());
-        }
-
-        List<JustModel> secondaries = this.secondaryRepository.findAll();
-        for (JustModel secondary : secondaries) {
-            logger.info(secondary.toString());
-        }
-
-        logger.info("************************************************************");
-        logger.info("Ended printing mongo objects");
-        logger.info("************************************************************");
+//        this.primaryRepository.save(new Payment(1, 1, BigDecimal.TEN));
+//
+//        this.secondaryRepository.save(new Payment(2, 2, BigDecimal.ONE));
+//
+//        List<Payment> primaries = this.primaryRepository.findAll();
+//        for (Payment  primary : primaries) {
+//            logger.info(primary.toString());
+//        }
+//
+//        List<Payment> secondaries = this.secondaryRepository.findAll();
+//        for (Payment secondary : secondaries) {
+//            logger.info(secondary.toString());
+//        }
+//
+//        logger.info("************************************************************");
+//        logger.info("Ended printing mongo objects");
+//        logger.info("************************************************************");
 
 
 

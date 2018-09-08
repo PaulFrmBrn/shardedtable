@@ -1,6 +1,7 @@
 package com.paulfrmbrn.sharded.table;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
@@ -10,6 +11,7 @@ import static java.util.Objects.requireNonNull;
 // todo javaodc
 // todo test
 // todo final
+@Document(collection = "payment")
 public class Payment {
 
     @Id

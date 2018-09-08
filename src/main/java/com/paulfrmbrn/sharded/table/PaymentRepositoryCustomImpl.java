@@ -2,7 +2,6 @@ package com.paulfrmbrn.sharded.table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
@@ -21,7 +20,7 @@ public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentRepositoryCustomImpl.class);
 
-    @Autowired
+    //@Autowired
     private MongoTemplate mongoTemplate;
 
 
