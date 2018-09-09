@@ -1,10 +1,9 @@
-package com.paulfrmbrn.sharded.table.dao.common;
+package com.paulfrmbrn.sharded.table.dao;
 
 import com.paulfrmbrn.sharded.table.Payment;
 import org.bson.types.Decimal128;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
@@ -14,27 +13,20 @@ import org.springframework.data.mongodb.core.query.Criteria;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.match;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.project;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
-public class PaymentRepositoryImpl implements PaymentRepository {
+// todo rename
+// todo utils class
+public class PaymentRepositoryUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(PaymentRepositoryImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(PaymentRepositoryUtils.class);
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
-
-
-    // todo refactor
-    @Override
-    public Optional<BigDecimal> getTotalForPayer(long payerId) {
-
-//        Query query = new Query();
-//        query.addCriteria(Criteria.where("payerId").is(payerId));
-//        List<Payment> payments = mongoTemplate.find(query, Payment.class);
-//        logger.info("payments = {}", payments);
+    public static BigDecimal getPayerTotal(long payerId, MongoTemplate mongoTemplate) {
 
         Criteria criteria = where("payerId").is(payerId);
         GroupOperation group = group("payerId")
@@ -56,7 +48,7 @@ public class PaymentRepositoryImpl implements PaymentRepository {
         logger.debug("mappedResults = {}", mappedResults);
 
         if (mappedResults.size() == 0) {
-            return Optional.empty();
+            return BigDecimal.ZERO;
         } else {
             PaymentSummary summary = mappedResults.get(0);
             logger.debug("summary = {}", summary);
@@ -64,7 +56,7 @@ public class PaymentRepositoryImpl implements PaymentRepository {
             logger.debug("total = {}", total);
             BigDecimal totalBD = total.bigDecimalValue();
             logger.debug("total (BigDecial) = {}", totalBD);
-            return Optional.of(totalBD);
+            return totalBD;
         }
 
     }
