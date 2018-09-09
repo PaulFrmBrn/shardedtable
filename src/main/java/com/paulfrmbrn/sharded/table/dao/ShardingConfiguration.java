@@ -2,8 +2,6 @@ package com.paulfrmbrn.sharded.table.dao;
 
 import com.paulfrmbrn.sharded.table.dao.primary.PrimaryRepository;
 import com.paulfrmbrn.sharded.table.dao.secondary.SecondaryRepository;
-import com.paulfrmbrn.sharded.table.dao.shrading.Shard;
-import com.paulfrmbrn.sharded.table.dao.shrading.ShardingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;

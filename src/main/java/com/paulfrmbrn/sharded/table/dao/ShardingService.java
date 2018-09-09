@@ -1,4 +1,4 @@
-package com.paulfrmbrn.sharded.table.dao.shrading;
+package com.paulfrmbrn.sharded.table.dao;
 
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
