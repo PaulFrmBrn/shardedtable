@@ -1,4 +1,4 @@
-package com.paulfrmbrn.sharded.table.dao.primary;
+package com.paulfrmbrn.sharded.table.sharding.primary;
 
 import com.paulfrmbrn.sharded.table.Payment;
 import org.springframework.data.mongodb.repository.MongoRepository;

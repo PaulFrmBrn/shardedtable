@@ -1,4 +1,4 @@
-package com.paulfrmbrn.sharded.table.dao.primary;
+package com.paulfrmbrn.sharded.table.sharding.primary;
 
 import com.mongodb.MongoClient;
 import org.springframework.beans.factory.annotation.Value;

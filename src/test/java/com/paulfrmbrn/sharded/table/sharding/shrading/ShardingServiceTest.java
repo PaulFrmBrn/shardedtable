@@ -1,7 +1,7 @@
-package com.paulfrmbrn.sharded.table.dao.shrading;
+package com.paulfrmbrn.sharded.table.sharding.shrading;
 
-import com.paulfrmbrn.sharded.table.dao.Shard;
-import com.paulfrmbrn.sharded.table.dao.ShardingService;
+import com.paulfrmbrn.sharded.table.sharding.Shard;
+import com.paulfrmbrn.sharded.table.sharding.ShardingService;
 import org.junit.Test;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.MongoRepository;

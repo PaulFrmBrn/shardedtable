@@ -1,4 +1,4 @@
-package com.paulfrmbrn.sharded.table.dao.secondary;
+package com.paulfrmbrn.sharded.table.sharding.secondary;
 
 import com.mongodb.MongoClient;
 import org.springframework.beans.factory.annotation.Value;

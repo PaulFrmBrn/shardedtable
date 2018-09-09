@@ -1,7 +1,8 @@
 package com.paulfrmbrn.sharded.table;
 
-import com.paulfrmbrn.sharded.table.dao.ShardedRepository;
-import com.paulfrmbrn.sharded.table.dao.primary.PrimaryRepository;
+import com.paulfrmbrn.sharded.table.sharding.ShardedRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,6 +11,8 @@ import reactor.core.publisher.Flux;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.BaseStream;
+import java.util.stream.Stream;
 
 
 // todo test
@@ -18,15 +21,20 @@ import java.util.List;
 @RestController
 public class PaymentController {
 
-    @Autowired
-    private PrimaryRepository primaryRepository;
+    private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
 
     @Autowired
     private ShardedRepository shardedRepository;
 
-    @GetMapping("/payments")
+    @Autowired
+    private FileParser fileParser;
+
+    @GetMapping("/payments/list")
     public Flux<Payment> listPayment() {
-        return Flux.fromIterable(primaryRepository.findAll());
+        if (logger.isDebugEnabled()) {
+            shardedRepository.logPayments();
+        }
+        return Flux.fromIterable(shardedRepository.listPayments());
     }
 
     @GetMapping("/payer/total/{id}")
@@ -44,5 +52,17 @@ public class PaymentController {
         return shardedRepository.getTopStores(number);
     }
 
+    @GetMapping("/payments/load")
+    public void loadPayment() {
+        Stream<Payment> payments = fileParser.getPayments();
+        getFlux(payments).subscribe(payment -> {
+            shardedRepository.save(payment);
+        });
+
+    }
+
+    private static <T> Flux<T> getFlux(Stream<T> stream) {
+        return Flux.using(() -> stream, Flux::fromStream, BaseStream::close);
+    }
 
 }

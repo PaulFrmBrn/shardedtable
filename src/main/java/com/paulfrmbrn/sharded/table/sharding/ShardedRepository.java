@@ -1,4 +1,4 @@
-package com.paulfrmbrn.sharded.table.dao;
+package com.paulfrmbrn.sharded.table.sharding;
 
 import com.paulfrmbrn.sharded.table.Payment;
 import com.paulfrmbrn.sharded.table.Summary;
@@ -23,6 +23,9 @@ public class ShardedRepository {
         this.shardingService = shardingService;
     }
 
+    /**
+     * Сохранить платеж
+     */
     public void save(Payment payment) {
         shardingService.getShard(payment.getPayerId()).getRepository().save(payment);
     }
@@ -36,7 +39,7 @@ public class ShardedRepository {
     }
 
     /**
-     * Получить TOP-3 отправителей (максимально много заплативших);
+     * Получить TOP-N отправителей (максимально много заплативших);
      */
     public List<Summary> getTopPayers(int number) {
         return shardingService.getAllShards().stream()
@@ -50,7 +53,7 @@ public class ShardedRepository {
     }
 
     /**
-     * Получить TOP-3 по магазинам (максимально много заработавших).
+     * Получить TOP-N по магазинам (максимально много заработавших).
      */
     public List<Summary> getTopStores(int number) {
         Map<Long, BigDecimal> map = shardingService.getAllShards().stream()
@@ -74,4 +77,38 @@ public class ShardedRepository {
                 .collect(Collectors.toList());
 
     }
+
+    /**
+     * Получить чписок всех платежей
+     */
+    public List<Payment> listPayments() {
+        return shardingService.getAllShards().stream()
+                .map(Shard::getMongoTemplate)
+                .map(mongoTemplate -> mongoTemplate.findAll(Payment.class))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Загрузить платежи из файла в шарды
+     */
+    public void logPayments() {
+        logger.debug("Payments:");
+        logger.debug("----------------------------->>");
+        shardingService.getAllShards().forEach(shard -> {
+            logger.debug("shard {} ------>>", shard.getNumber());
+            shard.getMongoTemplate().findAll(Payment.class).forEach(it -> logger.info(it.toString()));
+        });
+        logger.debug("-----------------------------<<");
+    }
+
+    /**
+     * Удалить все платежи из шардов
+     */
+    public void deleteAll() {
+        logger.debug("Deleting all Payments");
+        shardingService.getAllShards().forEach(it -> it.getMongoTemplate().remove(Payment.class).all());
+        logger.debug("All Payments are deleted");
+    }
+
 }
