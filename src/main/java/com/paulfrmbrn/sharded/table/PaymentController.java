@@ -39,5 +39,10 @@ public class PaymentController {
         return shardedRepository.getTopPayers(number);
     }
 
+    @GetMapping("/store/top/{number}")
+    public List<Summary> getTopStores(@PathVariable Integer number) {
+        return shardedRepository.getTopStores(number);
+    }
+
 
 }

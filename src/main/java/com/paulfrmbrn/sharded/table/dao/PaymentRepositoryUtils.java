@@ -96,7 +96,52 @@ public class PaymentRepositoryUtils {
 
     }
 
+    public static List<Summary> getStoresTotal(MongoTemplate mongoTemplate) {
 
+        GroupOperation group = group("storeId")
+                .last("storeId").as("storeId")
+                .sum("sum").as("total");
+
+        ProjectionOperation project = project()
+                .andExpression("storeId").as("storeId")
+                .andExpression("total").as("total");
+
+        Aggregation aggregation = newAggregation(
+                group, project);
+
+        List<StoreSummary> mappedResults = mongoTemplate.aggregate(
+                aggregation,
+                Payment.class,
+                StoreSummary.class
+        ).getMappedResults();
+
+        logger.info("all stores: {}", mappedResults);
+
+        List<Summary> topNStores = mappedResults.stream()
+                .map(storeSummary -> new Summary(storeSummary.storeId, storeSummary.total.bigDecimalValue()))
+                .collect(Collectors.toList());
+
+        logger.info("all stores 2: {}", mappedResults);
+
+        return topNStores;
+
+    }
+
+    // todo rename MongoSummary
+    private class StoreSummary {
+        private Long storeId;
+        private Decimal128 total;
+
+        @Override
+        public String toString() {
+            return "StoreSummary{" +
+                    "storeId=" + storeId +
+                    ", total=" + total +
+                    '}';
+        }
+    }
+
+    // todo rename MongoSummary
     private class PayerSummary {
         private Long payerId;
         private Decimal128 total;
@@ -110,6 +155,7 @@ public class PaymentRepositoryUtils {
         }
     }
 
+    // todo comabine with MongoSummary
     // todo rename
     private class PaymentSummary {
 
