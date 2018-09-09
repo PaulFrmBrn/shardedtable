@@ -6,16 +6,16 @@ import org.bson.types.Decimal128;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.aggregation.LimitOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.aggregation.SortOperation;
+import reactor.core.publisher.Flux;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.limit;
@@ -27,11 +27,14 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 // todo rename
 // todo utils class
-public class PaymentRepositoryUtils {
+public final class PaymentRepositoryUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentRepositoryUtils.class);
 
-    public static BigDecimal getPayerTotal(long payerId, MongoTemplate mongoTemplate) {
+    private PaymentRepositoryUtils() {
+    }
+
+    public static Flux<BigDecimal> getPayerTotal(long payerId, ReactiveMongoTemplate mongoTemplate) {
 
         logger.info("getPayerTotal(): {}", payerId);
 
@@ -44,26 +47,17 @@ public class PaymentRepositoryUtils {
                         .last("sum").as("lastSum"),
                 project("total", "lastSum", "storeIds").and("payerId").previousOperation());
 
-        List<PaymentSummary> mappedResults = mongoTemplate.aggregate(
-                aggregation,
-                Payment.class,
-                PaymentSummary.class
-        ).getMappedResults();
-
-        logger.debug("mappedResults = {}", mappedResults);
-
-        if (mappedResults.size() == 0) {
-            return BigDecimal.ZERO;
-        } else {
-            PaymentSummary summary = mappedResults.get(0);
-            BigDecimal total = summary.total.bigDecimalValue();
-            logger.info("payer total: payerId={}, total={}", payerId, total);
-            return total;
-        }
-
+        return mongoTemplate.aggregate(aggregation, Payment.class, PaymentSummary.class)
+                .map(summary -> {
+                    BigDecimal total = summary.total.bigDecimalValue();
+                    logger.info("payer total: payerId={}, total={}", payerId, total);
+                    return total;
+                });
     }
 
-    public static List<Summary> getTopPayers(int number, MongoTemplate mongoTemplate) {
+    public static Flux<Summary> getTopPayers(int number, ReactiveMongoTemplate mongoTemplate) {
+
+        logger.info("getTopPayers(): {}", number);
 
         GroupOperation group = group("payerId")
                 .last("payerId").as("payerId")
@@ -78,25 +72,14 @@ public class PaymentRepositoryUtils {
         Aggregation aggregation = newAggregation(
                 group, sort, limit, project);
 
-        List<PayerSummary> mappedResults = mongoTemplate.aggregate(
-                aggregation,
-                Payment.class,
-                PayerSummary.class
-        ).getMappedResults();
-
-        logger.info("top payers: {}", mappedResults);
-
-        List<Summary> topNPayers = mappedResults.stream()
-                .map(payerSummary -> new Summary(payerSummary.payerId, payerSummary.total.bigDecimalValue()))
-                .collect(Collectors.toList());
-
-        logger.info("top payers 2: {}", mappedResults);
-
-        return topNPayers;
+        return mongoTemplate.aggregate(aggregation, Payment.class, PayerSummary.class)
+                .map(summary -> new Summary(summary.payerId, summary.total.bigDecimalValue()));
 
     }
 
-    public static List<Summary> getStoresTotal(MongoTemplate mongoTemplate) {
+    public static Flux<Summary> getStoresTotal(ReactiveMongoTemplate mongoTemplate) {
+
+        logger.info("getStoresTotal()");
 
         GroupOperation group = group("storeId")
                 .last("storeId").as("storeId")
@@ -109,21 +92,8 @@ public class PaymentRepositoryUtils {
         Aggregation aggregation = newAggregation(
                 group, project);
 
-        List<StoreSummary> mappedResults = mongoTemplate.aggregate(
-                aggregation,
-                Payment.class,
-                StoreSummary.class
-        ).getMappedResults();
-
-        logger.info("all stores: {}", mappedResults);
-
-        List<Summary> topNStores = mappedResults.stream()
-                .map(storeSummary -> new Summary(storeSummary.storeId, storeSummary.total.bigDecimalValue()))
-                .collect(Collectors.toList());
-
-        logger.info("all stores 2: {}", mappedResults);
-
-        return topNStores;
+        return mongoTemplate.aggregate(aggregation, Payment.class, StoreSummary.class)
+                .map(summary -> new Summary(summary.storeId, summary.total.bigDecimalValue()));
 
     }
 

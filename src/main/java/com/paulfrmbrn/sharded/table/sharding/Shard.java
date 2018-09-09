@@ -1,15 +1,15 @@
 package com.paulfrmbrn.sharded.table.sharding;
 
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 
 
 public class Shard {
 
     private final int number;
 
-    private final MongoTemplate mongoTemplate;
+    private final ReactiveMongoTemplate mongoTemplate;
 
-    public Shard(int number, MongoTemplate mongoTemplate) {
+    public Shard(int number, ReactiveMongoTemplate mongoTemplate) {
         this.number = number;
         this.mongoTemplate = mongoTemplate;
     }
@@ -25,7 +25,7 @@ public class Shard {
                 '}';
     }
 
-    public MongoTemplate getMongoTemplate() {
+    public ReactiveMongoTemplate getMongoTemplate() {
         return mongoTemplate;
 
     }

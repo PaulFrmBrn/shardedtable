@@ -1,10 +1,10 @@
 package com.paulfrmbrn.sharded.table.sharding.secondary;
 
-import com.mongodb.MongoClient;
+import com.mongodb.reactivestreams.client.MongoClients;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 
 @Configuration
 public class SecondaryMongoConfig {
@@ -19,10 +19,10 @@ public class SecondaryMongoConfig {
     private String database;
 
     @Bean(name = "secondaryMongoTemplate")
-    public MongoTemplate secondaryMongoTemplate() throws Exception {
-        //return new ReactiveMongoTemplate(MongoClients.create("mongodb://" + host + ":" + port), database);
+    public ReactiveMongoTemplate secondaryMongoTemplate() throws Exception {
+        return new ReactiveMongoTemplate(MongoClients.create("mongodb://" + host + ":" + port), database);
         //return new MongoTemplate(mongoClient(), getDatabaseName());
-        return new MongoTemplate(new MongoClient(host, port), database);
+        //return new MongoTemplate(new MongoClient(host, port), database);
     }
 
 }

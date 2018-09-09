@@ -4,10 +4,11 @@ import com.paulfrmbrn.sharded.table.Payment;
 import com.paulfrmbrn.sharded.table.Summary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -26,67 +27,80 @@ public class ShardedRepository {
     /**
      * Сохранить платеж
      */
-    public void save(Payment payment) {
-        shardingService.getShard(payment.getPayerId()).getMongoTemplate().save(payment);
+    public Mono<Payment> save(Payment payment) {
+        return shardingService.getShard(payment.getPayerId()).getMongoTemplate().save(payment);
     }
 
     /**
      * Выдать общую сумму потраченных средств по отправителю;
      */
-    public BigDecimal getPayerTotal(long payerId) {
-        MongoTemplate mongoTemplate = shardingService.getShard(payerId).getMongoTemplate();
+    public Flux<BigDecimal> getPayerTotal(long payerId) {
+        ReactiveMongoTemplate mongoTemplate = shardingService.getShard(payerId).getMongoTemplate();
         return PaymentRepositoryUtils.getPayerTotal(payerId, mongoTemplate);
     }
 
     /**
      * Получить TOP-N отправителей (максимально много заплативших);
      */
-    public List<Summary> getTopPayers(int number) {
-        return shardingService.getAllShards().stream()
-                .map(Shard::getMongoTemplate)
-                .map(template -> PaymentRepositoryUtils.getTopPayers(number, template))
-                .flatMap(Collection::stream)
-                .sorted(Comparator.comparing(Summary::getTotal).reversed())
-                .limit(number)
-                .collect(Collectors.toList());
+    public Flux<Summary> getTopPayers(int number) {
 
+        return Flux.fromStream(shardingService.getAllShards().stream())
+                .map(Shard::getMongoTemplate)
+                .flatMap(template -> PaymentRepositoryUtils.getTopPayers(number, template))
+                .sort(Comparator.comparing(Summary::getTotal).reversed())
+                .take(number);
     }
 
     /**
      * Получить TOP-N по магазинам (максимально много заработавших).
      */
-    public List<Summary> getTopStores(int number) {
-        Map<Long, BigDecimal> map = shardingService.getAllShards().stream()
+    public Flux<Summary> getTopStores(int number) {
+
+        Flux<Summary> summaryFlux = Flux.just();
+
+        Flux.fromStream(shardingService.getAllShards().stream())
                 .map(Shard::getMongoTemplate)
-                .map(PaymentRepositoryUtils::getStoresTotal)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toMap(
-                        Summary::getId,
-                        Summary::getTotal,
-                        BigDecimal::add)
-                );
+                .flatMap(PaymentRepositoryUtils::getStoresTotal)
+                .collectList()
+                .subscribe(summaries -> {
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("getTopStore(): all shard summary: {}", map);
-        }
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("summaries: {}", summaries);
+                    }
 
-        return map.entrySet().stream()
-                .sorted((Map.Entry.<Long, BigDecimal>comparingByValue().reversed()))
-                .limit(number)
-                .map(it -> new Summary(it.getKey(), it.getValue()))
-                .collect(Collectors.toList());
+                    Map<Long, BigDecimal> map = summaries.stream()
+                            .collect(Collectors.toMap(
+                                    Summary::getId,
+                                    Summary::getTotal,
+                                    BigDecimal::add));
 
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("all shard summary: {}", map);
+                    }
+
+                    List<Summary> result = map.entrySet().stream()
+                            .sorted((Map.Entry.<Long, BigDecimal>comparingByValue().reversed()))
+                            .limit(number)
+                            .map(it -> new Summary(it.getKey(), it.getValue()))
+                            .collect(Collectors.toList());
+
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("summary: {}", result);
+                    }
+
+                    summaryFlux.concatWith(Flux.fromIterable(result));
+                });
+
+        return summaryFlux;
     }
 
     /**
      * Получить чписок всех платежей
      */
-    public List<Payment> listPayments() {
-        return shardingService.getAllShards().stream()
+    public Flux<Payment> listPayments() {
+        return Flux.fromStream(shardingService.getAllShards().stream())
                 .map(Shard::getMongoTemplate)
-                .map(mongoTemplate -> mongoTemplate.findAll(Payment.class))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+                .flatMap((template -> template.findAll(Payment.class)));
     }
 
     /**
@@ -97,7 +111,7 @@ public class ShardedRepository {
         logger.debug("----------------------------->>");
         shardingService.getAllShards().forEach(shard -> {
             logger.debug("shard {} ------>>", shard.getNumber());
-            shard.getMongoTemplate().findAll(Payment.class).forEach(it -> logger.info(it.toString()));
+            shard.getMongoTemplate().findAll(Payment.class).subscribe(it -> logger.info(it.toString()));
         });
         logger.debug("-----------------------------<<");
     }
@@ -107,7 +121,7 @@ public class ShardedRepository {
      */
     public void deleteAll() {
         logger.debug("Deleting all Payments");
-        shardingService.getAllShards().forEach(it -> it.getMongoTemplate().remove(Payment.class).all());
+        shardingService.getAllShards().forEach(it -> it.getMongoTemplate().remove(Payment.class).all().subscribe());
         logger.debug("All Payments are deleted");
     }
 

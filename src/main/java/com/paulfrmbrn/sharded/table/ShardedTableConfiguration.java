@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,11 +27,11 @@ public class ShardedTableConfiguration {
 
     @Autowired
     @Qualifier("primaryMongoTemplate")
-    public MongoTemplate primaryMongoTemplate;
+    public ReactiveMongoTemplate primaryMongoTemplate;
 
     @Autowired
     @Qualifier("secondaryMongoTemplate")
-    public MongoTemplate secondaryMongoTemplate;
+    public ReactiveMongoTemplate secondaryMongoTemplate;
 
 
     @Bean

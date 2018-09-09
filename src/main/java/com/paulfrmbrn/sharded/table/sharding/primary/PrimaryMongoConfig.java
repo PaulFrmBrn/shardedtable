@@ -1,11 +1,11 @@
 package com.paulfrmbrn.sharded.table.sharding.primary;
 
-import com.mongodb.MongoClient;
+import com.mongodb.reactivestreams.client.MongoClients;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 
 @Configuration
 public class PrimaryMongoConfig {
@@ -21,7 +21,7 @@ public class PrimaryMongoConfig {
 
     @Primary
     @Bean(name = "primaryMongoTemplate")
-    public MongoTemplate primaryMongoTemplate() throws Exception {
-        return new MongoTemplate(new MongoClient(host, port), database);
+    public ReactiveMongoTemplate primaryMongoTemplate() throws Exception {
+        return new ReactiveMongoTemplate(MongoClients.create("mongodb://" + host + ":" + port), database);
     }
 }
