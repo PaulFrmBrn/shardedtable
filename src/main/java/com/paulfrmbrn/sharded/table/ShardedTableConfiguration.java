@@ -3,8 +3,6 @@ package com.paulfrmbrn.sharded.table;
 import com.paulfrmbrn.sharded.table.sharding.Shard;
 import com.paulfrmbrn.sharded.table.sharding.ShardedRepository;
 import com.paulfrmbrn.sharded.table.sharding.ShardingService;
-import com.paulfrmbrn.sharded.table.sharding.primary.PrimaryRepository;
-import com.paulfrmbrn.sharded.table.sharding.secondary.SecondaryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,12 +26,6 @@ public class ShardedTableConfiguration {
     private String csvFilePath;
 
     @Autowired
-    private PrimaryRepository primaryRepository;
-
-    @Autowired
-    private SecondaryRepository secondaryRepository;
-
-    @Autowired
     @Qualifier("primaryMongoTemplate")
     public MongoTemplate primaryMongoTemplate;
 
@@ -45,8 +37,8 @@ public class ShardedTableConfiguration {
     @Bean
     ShardingService shardingService() {
         List<Shard> shards = Arrays.asList(
-                new Shard(1, primaryRepository, primaryMongoTemplate),
-                new Shard(2, secondaryRepository, secondaryMongoTemplate)
+                new Shard(1, primaryMongoTemplate),
+                new Shard(2, secondaryMongoTemplate)
         );
         return new ShardingService(minKeyValue, maxKeyValue, shards);
     }

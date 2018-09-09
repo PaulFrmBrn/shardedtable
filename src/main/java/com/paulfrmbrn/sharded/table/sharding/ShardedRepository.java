@@ -27,7 +27,7 @@ public class ShardedRepository {
      * Сохранить платеж
      */
     public void save(Payment payment) {
-        shardingService.getShard(payment.getPayerId()).getRepository().save(payment);
+        shardingService.getShard(payment.getPayerId()).getMongoTemplate().save(payment);
     }
 
     /**
