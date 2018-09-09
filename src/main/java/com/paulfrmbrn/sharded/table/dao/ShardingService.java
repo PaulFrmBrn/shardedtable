@@ -6,6 +6,7 @@ import com.google.common.collect.RangeMap;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -14,7 +15,9 @@ import static java.util.Objects.requireNonNull;
 
 public class ShardingService {
 
-    private final RangeMap<Long, Shard> shards;
+    private final RangeMap<Long, Shard> shardMap;
+
+    private final List<Shard> shardList;
 
     public ShardingService(long minKeyValue, long maxKeyValue, List<Shard> shards) {
 
@@ -23,6 +26,8 @@ public class ShardingService {
         if (shards.size() == 0) {
             throw new IllegalArgumentException("Shards size is 0");
         }
+
+        this.shardList = Collections.unmodifiableList(shards);
 
         ImmutableRangeMap.Builder<Long, Shard> builder = ImmutableRangeMap.builder();
         if (shards.size() == 1) {
@@ -46,17 +51,21 @@ public class ShardingService {
             }
 
         }
-        this.shards = builder.build();
+        this.shardMap = builder.build();
 
     }
 
     @Nonnull
     public Shard getShard(long key) {
-        Shard shard = shards.get(key);
+        Shard shard = shardMap.get(key);
         if (shard == null) {
             throw new IllegalArgumentException("key is invalid");
         }
         return shard;
+    }
+
+    public List<Shard> getAllShards() {
+        return shardList;
     }
 
 }

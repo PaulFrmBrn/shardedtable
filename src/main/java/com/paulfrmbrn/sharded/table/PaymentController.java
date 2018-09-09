@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 
 // todo test
@@ -30,8 +31,12 @@ public class PaymentController {
 
     @GetMapping("/payer/total/{id}")
     public BigDecimal getPayerTotal(@PathVariable Long id) {
-        //return Mono.empty();
         return shardedRepository.getPayerTotal(id);
+    }
+
+    @GetMapping("/payer/top/{number}")
+    public List<Summary> getTopPayers(@PathVariable Integer number) {
+        return shardedRepository.getTopPayers(number);
     }
 
 

@@ -1,19 +1,28 @@
 package com.paulfrmbrn.sharded.table.dao;
 
 import com.paulfrmbrn.sharded.table.Payment;
+import com.paulfrmbrn.sharded.table.Summary;
 import org.bson.types.Decimal128;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.aggregation.LimitOperation;
+import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
+import org.springframework.data.mongodb.core.aggregation.SortOperation;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.limit;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.match;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.project;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.sort;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 // todo rename
@@ -52,6 +61,53 @@ public class PaymentRepositoryUtils {
             return total;
         }
 
+    }
+
+    public static List<Summary> getTopPayers(int number, MongoTemplate mongoTemplate) {
+
+        GroupOperation group = group("payerId")
+                .last("payerId").as("payerId")
+                .sum("sum").as("total");
+        SortOperation sort = sort(new Sort(Sort.Direction.DESC, "total"));
+        LimitOperation limit = limit(number);
+
+        ProjectionOperation project = project()
+                .andExpression("payerId").as("payerId")
+                .andExpression("total").as("total");
+
+        Aggregation aggregation = newAggregation(
+                group, sort, limit, project);
+
+        List<PayerSummary> mappedResults = mongoTemplate.aggregate(
+                aggregation,
+                Payment.class,
+                PayerSummary.class
+        ).getMappedResults();
+
+        logger.info("top payers: {}", mappedResults);
+
+        List<Summary> topNPayers = mappedResults.stream()
+                .map(payerSummary -> new Summary(payerSummary.payerId, payerSummary.total.bigDecimalValue()))
+                .collect(Collectors.toList());
+
+        logger.info("top payers 2: {}", mappedResults);
+
+        return topNPayers;
+
+    }
+
+
+    private class PayerSummary {
+        private Long payerId;
+        private Decimal128 total;
+
+        @Override
+        public String toString() {
+            return "PayerSummary{" +
+                    "payerId=" + payerId +
+                    ", total=" + total +
+                    '}';
+        }
     }
 
     // todo rename

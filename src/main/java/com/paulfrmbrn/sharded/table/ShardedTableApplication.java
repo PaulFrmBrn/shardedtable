@@ -66,9 +66,9 @@ public class ShardedTableApplication implements CommandLineRunner {
                 .subscribe(payment -> {
                     shardedRepository.save(payment);
                 });
-
-        this.shardedRepository.save(new Payment(1, 1, BigDecimal.TEN));
-        this.shardedRepository.save(new Payment(2, 2, BigDecimal.ONE));
+//
+//        this.shardedRepository.save(new Payment(1, 1, BigDecimal.TEN));
+//        this.shardedRepository.save(new Payment(2, 2, BigDecimal.ONE));
 
         logger.info("Payments found with findAll():");
         logger.info("-------------------------------");
