@@ -21,8 +21,6 @@ public class SecondaryMongoConfig {
     @Bean(name = "secondaryMongoTemplate")
     public ReactiveMongoTemplate secondaryMongoTemplate() throws Exception {
         return new ReactiveMongoTemplate(MongoClients.create("mongodb://" + host + ":" + port), database);
-        //return new MongoTemplate(mongoClient(), getDatabaseName());
-        //return new MongoTemplate(new MongoClient(host, port), database);
     }
 
 }

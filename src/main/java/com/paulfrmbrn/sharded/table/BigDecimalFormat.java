@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 
-// todo test
-// todo javadoc
 public class BigDecimalFormat {
 
     // DecimalFormat is not thread safe

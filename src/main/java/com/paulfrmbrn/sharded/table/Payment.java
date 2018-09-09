@@ -9,9 +9,6 @@ import java.math.BigDecimal;
 
 import static java.util.Objects.requireNonNull;
 
-// todo javaodc
-// todo test
-// todo final
 @Document(collection = "payment2")
 public class Payment {
 
